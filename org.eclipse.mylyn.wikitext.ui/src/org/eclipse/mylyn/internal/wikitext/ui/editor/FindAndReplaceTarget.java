@@ -86,6 +86,12 @@ public class FindAndReplaceTarget implements IFindReplaceTarget, IFindReplaceTar
 			this.findHit = findHit;
 		}
 
+		@Override
+		public String toString() {
+			return "Result [selection=" + selection + ", findString=" + findString + ", index=" + index + ", findHit=" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+					+ findHit + "]"; //$NON-NLS-1$
+		}
+
 	}
 
 	public FindAndReplaceTarget(ITextViewer textViewer) {
@@ -125,13 +131,15 @@ public class FindAndReplaceTarget implements IFindReplaceTarget, IFindReplaceTar
 
 	public void beginSession() {
 		if (installed) {
-			saveState();
-			repeatSearch();
+			next();
 			return;
 		}
 		clearState();
 
 		index = 0;
+		findHit = true;
+		findString = ""; //$NON-NLS-1$
+
 		StyledText textWidget = textViewer.getTextWidget();
 		if (textWidget != null && !textWidget.isDisposed()) {
 			index = textWidget.getCaretOffset();
@@ -145,8 +153,17 @@ public class FindAndReplaceTarget implements IFindReplaceTarget, IFindReplaceTar
 		}
 	}
 
+	private void next() {
+		if (findHit) {
+			saveState();
+		}
+		repeatSearch();
+	}
+
 	private void saveState() {
-		state.push(new Result(new Point(index, index + findString.length()), findString, index, findHit));
+		Result newState = new Result(new Point(index, index + findString.length()), findString, index, findHit);
+
+		state.push(newState);
 	}
 
 	private void clearState() {
@@ -405,7 +422,6 @@ public class FindAndReplaceTarget implements IFindReplaceTarget, IFindReplaceTar
 		}
 		if (event.character == 0) {
 			switch (event.keyCode) {
-			case SWT.ARROW_DOWN:
 			case SWT.ARROW_LEFT:
 			case SWT.ARROW_RIGHT:
 			case SWT.ARROW_UP:
@@ -414,6 +430,10 @@ public class FindAndReplaceTarget implements IFindReplaceTarget, IFindReplaceTar
 			case SWT.PAGE_DOWN:
 			case SWT.PAGE_UP:
 				stop();
+				break;
+			case SWT.ARROW_DOWN:
+				next();
+				event.doit = false;
 				break;
 			}
 		} else {
