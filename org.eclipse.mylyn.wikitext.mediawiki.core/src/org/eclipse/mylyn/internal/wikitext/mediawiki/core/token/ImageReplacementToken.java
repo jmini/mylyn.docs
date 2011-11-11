@@ -73,6 +73,7 @@ public class ImageReplacementToken extends PatternBasedElement {
 			String optionsString = group(2);
 
 			boolean thumbnail = false;
+			boolean frame = false;
 
 			ImageAttributes attributes = new ImageAttributes();
 			if (optionsString != null) {
@@ -106,7 +107,7 @@ public class ImageReplacementToken extends PatternBasedElement {
 					} else if ("frameless".equals(option)) { //$NON-NLS-1$
 						attributes.setBorder(0);
 					} else if ("frame".equals(option)) { //$NON-NLS-1$
-						attributes.setBorder(1);
+						frame = true;
 					} else {
 						Matcher altMatcher = altPattern.matcher(option);
 						if (altMatcher.matches()) {
@@ -123,7 +124,7 @@ public class ImageReplacementToken extends PatternBasedElement {
 					}
 				}
 			}
-			if (thumbnail) {
+			if (thumbnail || frame) {
 				// we want to generate something like this:
 //				<div class="thumb tleft">
 //				<div class="thumbinner" style="width:182px;"><a href="/wiki/File:Example.jpg"

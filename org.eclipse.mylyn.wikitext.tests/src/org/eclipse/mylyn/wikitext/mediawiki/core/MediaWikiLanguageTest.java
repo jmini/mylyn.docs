@@ -473,6 +473,13 @@ public class MediaWikiLanguageTest extends TestCase {
 		assertTrue(html.contains("<img align=\"left\" alt=\"the logo\" title=\"Official logo of the [[International Floorball Federation]], floorball's governing body.\" border=\"0\" src=\"IFF_Logo.JPG\"/>"));
 	}
 
+	public void testImageWithCaptionAndFrame() {
+		String html = parser.parseToHtml("[[Image:test.png|frame|center|caption for the image]]");
+
+		TestUtil.println("HTML: \n" + html);
+		assertTrue(html.contains("<div class=\"thumb middle\"><div class=\"thumbinner\"><a href=\"test.png\" class=\"image\"><img class=\"thumbimage\" align=\"middle\" border=\"0\" src=\"test.png\"/></a><div class=\"thumbcaption\">caption for the image</div></div></div>"));
+	}
+
 	public void testImageWithLinkInCaptionThumbnail() {
 		// example from http://en.wikipedia.org/wiki/International_Floorball_Federation
 		String html = parser.parseToHtml("[[Image:IFF Logo.JPG|thumb|left|the logo|Official logo of the [[International Floorball Federation]], floorball's governing body.]]");
