@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2010 David Green and others.
+ * Copyright (c) 2007, 2011 David Green and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -66,6 +66,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.mylyn.internal.wikitext.ui.WikiTextUiPlugin;
+import org.eclipse.mylyn.internal.wikitext.ui.editor.actions.PreviewOutlineItemAction;
 import org.eclipse.mylyn.internal.wikitext.ui.editor.actions.SetMarkupLanguageAction;
 import org.eclipse.mylyn.internal.wikitext.ui.editor.operations.AbstractDocumentCommand;
 import org.eclipse.mylyn.internal.wikitext.ui.editor.operations.CommandManager;
@@ -129,6 +130,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
  * content assist, validation, and cheat-sheet help content.
  * 
  * @author David Green
+ * @author Nicolas Bros
  */
 public class MarkupEditor extends TextEditor implements IShowInTarget, IShowInSource, CommandManager {
 	private static final String RULER_CONTEXT_MENU_ID = "org.eclipse.mylyn.internal.wikitext.ui.editor.MarkupEditor.ruler"; //$NON-NLS-1$
@@ -289,7 +291,7 @@ public class MarkupEditor extends TextEditor implements IShowInTarget, IShowInSo
 
 			public void widgetSelected(SelectionEvent selectionevent) {
 				if (isShowingPreview()) {
-					updatePreview(getNearestMatchingOutlineItem());
+					updatePreview();
 				}
 			}
 		});
@@ -506,7 +508,7 @@ public class MarkupEditor extends TextEditor implements IShowInTarget, IShowInSo
 							}
 							scheduleOutlineUpdate();
 							if (isShowingPreview()) {
-								updatePreview(null);
+								updatePreview();
 							}
 						}
 
@@ -530,9 +532,34 @@ public class MarkupEditor extends TextEditor implements IShowInTarget, IShowInSo
 		}
 	}
 
-	private void updatePreview(final OutlineItem item) {
-		boolean revealItem = item != null;
+	/**
+	 * JavaScript that returns the current top scroll position of the browser widget
+	 */
+	private static final String JAVASCRIPT_GETSCROLLTOP = "function getScrollTop() { " //$NON-NLS-1$
+			+ "  if(typeof pageYOffset!='undefined') return pageYOffset;" //$NON-NLS-1$
+			+ "  else{" + //$NON-NLS-1$
+			"var B=document.body;" + //$NON-NLS-1$
+			"var D=document.documentElement;" + //$NON-NLS-1$
+			"D=(D.clientHeight)?D:B;return D.scrollTop;}" //$NON-NLS-1$
+			+ "}; return getScrollTop();"; //$NON-NLS-1$
+
+	/**
+	 * updates the preview
+	 */
+	private void updatePreview() {
+		updatePreview(null);
+	}
+
+	/**
+	 * updates the preview and optionally reveal the section that corresponds to the given outline item.
+	 * 
+	 * @param outlineItem
+	 *            the outline item, or null
+	 */
+	private void updatePreview(final OutlineItem outlineItem) {
 		if (previewDirty && browser != null) {
+			Object result = browser.evaluate(JAVASCRIPT_GETSCROLLTOP);
+			final int verticalScrollbarPos = result != null ? ((Number) result).intValue() : 0;
 			String xhtml = null;
 			if (document == null) {
 				xhtml = "<?xml version=\"1.0\" ?><html xmlns=\"http://www.w3.org/1999/xhtml\"><body></body></html>"; //$NON-NLS-1$
@@ -606,21 +633,21 @@ public class MarkupEditor extends TextEditor implements IShowInTarget, IShowInSo
 					xhtml = documentWriter.toString();
 				}
 			}
-			if (revealItem) {
-				revealItem = false;
-				browser.addProgressListener(new ProgressAdapter() {
-					@Override
-					public void completed(ProgressEvent event) {
-						browser.removeProgressListener(this);
-						revealInBrowser(item);
+			browser.addProgressListener(new ProgressAdapter() {
+				@Override
+				public void completed(ProgressEvent event) {
+					browser.removeProgressListener(this);
+					if (outlineItem != null) {
+						revealInBrowser(outlineItem);
+					} else {
+						browser.execute(String.format("window.scrollTo(0,%d);", verticalScrollbarPos)); //$NON-NLS-1$
 					}
-				});
-			}
+				}
+			});
 			browser.setText(xhtml);
 			previewDirty = false;
-		}
-		if (revealItem) {
-			revealInBrowser(item);
+		} else if (outlineItem != null && browser != null) {
+			revealInBrowser(outlineItem);
 		}
 	}
 
@@ -1176,6 +1203,12 @@ public class MarkupEditor extends TextEditor implements IShowInTarget, IShowInSo
 		}
 
 		menu.prependToGroup(ITextEditorActionConstants.GROUP_SETTINGS, markupLanguageMenu);
+
+		OutlineItem nearestOutlineItem = getNearestMatchingOutlineItem();
+		if (nearestOutlineItem != null && !nearestOutlineItem.isRootItem()) {
+			menu.appendToGroup(ITextEditorActionConstants.GROUP_OPEN, new PreviewOutlineItemAction(this,
+					nearestOutlineItem));
+		}
 	}
 
 	public boolean isFoldingEnabled() {
@@ -1236,6 +1269,16 @@ public class MarkupEditor extends TextEditor implements IShowInTarget, IShowInSo
 		super.rulerContextMenuAboutToShow(menu);
 		// prevent line number toggle action from appearing
 		menu.remove(ITextEditorActionConstants.LINENUMBERS_TOGGLE);
+	}
+
+	/**
+	 * Causes the editor to display the preview at the specified outline item.
+	 */
+	public void showPreview(OutlineItem outlineItem) {
+		if (!isShowingPreview()) {
+			tabFolder.setSelection(previewTab);
+		}
+		updatePreview(outlineItem);
 	}
 
 	public void perform(AbstractDocumentCommand command) throws CoreException {

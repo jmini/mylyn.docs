@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2010 David Green and others.
+ * Copyright (c) 2007, 2011 David Green and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.mylyn.wikitext.confluence.core;
 
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +25,7 @@ import org.eclipse.mylyn.internal.wikitext.confluence.core.block.QuoteBlock;
 import org.eclipse.mylyn.internal.wikitext.confluence.core.block.TableBlock;
 import org.eclipse.mylyn.internal.wikitext.confluence.core.block.TableOfContentsBlock;
 import org.eclipse.mylyn.internal.wikitext.confluence.core.block.TextBoxBlock;
+import org.eclipse.mylyn.internal.wikitext.confluence.core.phrase.ColorPhraseModifier;
 import org.eclipse.mylyn.internal.wikitext.confluence.core.phrase.ConfluenceWrappedPhraseModifier;
 import org.eclipse.mylyn.internal.wikitext.confluence.core.phrase.EmphasisPhraseModifier;
 import org.eclipse.mylyn.internal.wikitext.confluence.core.phrase.HyperlinkPhraseModifier;
@@ -32,6 +34,7 @@ import org.eclipse.mylyn.internal.wikitext.confluence.core.phrase.SimplePhraseMo
 import org.eclipse.mylyn.internal.wikitext.confluence.core.phrase.SimpleWrappedPhraseModifier;
 import org.eclipse.mylyn.internal.wikitext.confluence.core.token.AnchorReplacementToken;
 import org.eclipse.mylyn.internal.wikitext.confluence.core.token.EscapedCharacterReplacementToken;
+import org.eclipse.mylyn.wikitext.core.parser.DocumentBuilder;
 import org.eclipse.mylyn.wikitext.core.parser.DocumentBuilder.BlockType;
 import org.eclipse.mylyn.wikitext.core.parser.DocumentBuilder.SpanType;
 import org.eclipse.mylyn.wikitext.core.parser.markup.AbstractMarkupLanguage;
@@ -123,6 +126,7 @@ public class ConfluenceLanguage extends AbstractMarkupLanguage {
 		phraseModifierSyntax.add(new SimplePhraseModifier("~", SpanType.SUBSCRIPT, false)); //$NON-NLS-1$
 		phraseModifierSyntax.add(new SimpleWrappedPhraseModifier("{{", "}}", SpanType.MONOSPACE, false)); //$NON-NLS-1$ //$NON-NLS-2$
 		phraseModifierSyntax.add(new ConfluenceWrappedPhraseModifier("{quote}", SpanType.QUOTE, true)); //$NON-NLS-1$ 
+		phraseModifierSyntax.add(new ColorPhraseModifier());
 		phraseModifierSyntax.add(new ImagePhraseModifier());
 		phraseModifierSyntax.endGroup(")(?=\\W|$)", 0); //$NON-NLS-1$
 	}
@@ -149,4 +153,11 @@ public class ConfluenceLanguage extends AbstractMarkupLanguage {
 		return new ParagraphBlock();
 	}
 
+	/**
+	 * @since 1.6
+	 */
+	@Override
+	public DocumentBuilder createDocumentBuilder(Writer out) {
+		return new ConfluenceDocumentBuilder(out);
+	}
 }

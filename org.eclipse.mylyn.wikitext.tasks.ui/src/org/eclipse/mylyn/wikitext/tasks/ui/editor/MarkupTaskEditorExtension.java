@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2010 David Green and others.
+ * Copyright (c) 2007, 2011 David Green and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.IRegion;
@@ -72,9 +73,12 @@ import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
  * @author David Green
  * @since 1.0
  */
-public class MarkupTaskEditorExtension<MarkupLanguageType extends MarkupLanguage> extends AbstractTaskEditorExtension {
+public class MarkupTaskEditorExtension<MarkupLanguageType extends MarkupLanguage> extends AbstractTaskEditorExtension
+		implements IAdaptable {
 
 	private static final String MARKUP_SOURCE_CONTEXT_ID = "org.eclipse.mylyn.wikitext.tasks.ui.markupSourceContext"; //$NON-NLS-1$
+
+	private static final String MARKUP_VIEWER = "org.eclipse.mylyn.wikitext.tasks.ui.markupViewer"; //$NON-NLS-1$
 
 	/**
 	 * Provide a means to disable WikiWord linking. This feature is experimental and may be removed in a future release.
@@ -119,8 +123,11 @@ public class MarkupTaskEditorExtension<MarkupLanguageType extends MarkupLanguage
 		configureMarkupLanguage(taskRepository, markupLanguageCopy);
 
 		markupViewer.setMarkupLanguage(markupLanguageCopy);
+
 		MarkupViewerConfiguration configuration = createViewerConfiguration(taskRepository, markupViewer, context);
 		configuration.setDisableHyperlinkModifiers(true);
+		configuration.setEnableSelfContainedIncrementalFind(true);
+
 		if (markupLanguageCopy.isDetectingRawHyperlinks()) {
 			// bug 264612 don't detect hyperlinks twice
 			configuration.addHyperlinkDetectorDescriptorFilter(new DefaultHyperlinkDetectorDescriptorFilter(
@@ -141,6 +148,12 @@ public class MarkupTaskEditorExtension<MarkupLanguageType extends MarkupLanguage
 		}
 
 		markupViewer.setStylesheet(WikiTextUiPlugin.getDefault().getPreferences().getStylesheet());
+
+		IFocusService focusService = (IFocusService) PlatformUI.getWorkbench().getService(IFocusService.class);
+		if (focusService != null) {
+			focusService.addFocusTracker(markupViewer.getTextWidget(), MARKUP_VIEWER);
+		}
+		markupViewer.getTextWidget().setData(ISourceViewer.class.getName(), markupViewer);
 
 		return markupViewer;
 	}
@@ -204,9 +217,11 @@ public class MarkupTaskEditorExtension<MarkupLanguageType extends MarkupLanguage
 		configureMarkupLanguage(taskRepository, markupLanguageCopy);
 
 		SourceViewer viewer = new MarkupSourceViewer(parent, null, style | SWT.WRAP, markupLanguageCopy);
+
 		// configure the viewer
 		MarkupSourceViewerConfiguration configuration = createSourceViewerConfiguration(taskRepository, viewer, context);
 
+		configuration.setEnableSelfContainedIncrementalFind(true);
 		configuration.setMarkupLanguage(markupLanguageCopy);
 		configuration.setShowInTarget(new ShowInTargetBridge(viewer));
 		viewer.configure(configuration);
@@ -484,5 +499,16 @@ public class MarkupTaskEditorExtension<MarkupLanguageType extends MarkupLanguage
 			}
 			return super.getBoolean(name);
 		}
+	}
+
+	/**
+	 * @since 1.6
+	 */
+	@SuppressWarnings("rawtypes")
+	public Object getAdapter(Class adapter) {
+		if (MarkupLanguage.class == adapter) {
+			return getMarkupLanguage();
+		}
+		return Platform.getAdapterManager().getAdapter(this, adapter);
 	}
 }

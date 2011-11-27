@@ -117,7 +117,7 @@ public class MediaWikiLanguage extends AbstractMediaWikiLanguage {
 	@Override
 	protected void addStandardPhraseModifiers(PatternBasedSyntax phraseModifierSyntax) {
 		phraseModifierSyntax.add(new EscapePhraseModifier());
-		phraseModifierSyntax.beginGroup("(?:(?<=[\\s\\.,\\\"'?!;:\\)\\(\\{\\}\\[\\]=])|^)(?:", 0); //$NON-NLS-1$
+		phraseModifierSyntax.beginGroup("(?:(?<=[\\s\\.,\\\"'?!;:\\)\\(\\{\\}\\[\\]=>])|^)(?:", 0); //$NON-NLS-1$
 		phraseModifierSyntax.add(new SimplePhraseModifier("'''''", new SpanType[] { SpanType.BOLD, SpanType.ITALIC }, //$NON-NLS-1$
 				true));
 		phraseModifierSyntax.add(new SimplePhraseModifier("'''", SpanType.BOLD, true)); //$NON-NLS-1$
@@ -152,7 +152,7 @@ public class MediaWikiLanguage extends AbstractMediaWikiLanguage {
 		tokenSyntax.add(new HyperlinkInternalReplacementToken());
 		tokenSyntax.add(new HyperlinkExternalReplacementToken());
 		tokenSyntax.add(new ImpliedHyperlinkReplacementToken());
-		tokenSyntax.add(new PatternLiteralReplacementToken("(?:(?<=\\w\\s)(----)(?=\\s\\w))", "<hr/>")); // horizontal rule //$NON-NLS-1$ //$NON-NLS-2$
+		tokenSyntax.add(new PatternLiteralReplacementToken("(?:(?<=^|\\w\\s)(----)(?=$|\\s\\w))", "<hr/>")); // horizontal rule //$NON-NLS-1$ //$NON-NLS-2$
 		tokenSyntax.add(new org.eclipse.mylyn.internal.wikitext.mediawiki.core.token.EntityReferenceReplacementToken());
 	}
 

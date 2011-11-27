@@ -85,6 +85,12 @@ public class MediaWikiLanguageTest extends TestCase {
 		assertTrue(Pattern.compile("<body><p>normal <b>bold text</b> normal</p></body>").matcher(html).find());
 	}
 
+	public void testBoldImmediatelyFollowingTag() {
+		String html = parser.parseToHtml("normal<br>'''bold text''' normal");
+		TestUtil.println(html);
+		assertTrue(Pattern.compile("<body><p>normal<br/><b>bold text</b> normal</p></body>").matcher(html).find());
+	}
+
 	public void testItalic() {
 		String html = parser.parseToHtml("normal ''italic text'' normal");
 		TestUtil.println(html);
@@ -146,6 +152,12 @@ public class MediaWikiLanguageTest extends TestCase {
 		String html = parser.parseToHtml("an hr ---- foo");
 		TestUtil.println("HTML: \n" + html);
 		assertTrue(html.contains("hr <hr/> foo"));
+	}
+
+	public void testHorizontalRule2() {
+		String html = parser.parseToHtml("Mediawiki should render:\n----\nAs a \"horizontal rule\".");
+		TestUtil.println("HTML: \n" + html);
+		assertTrue(Pattern.compile("render\\:\\s*<hr/>\\s*As a").matcher(html).find());
 	}
 
 	public void testListUnordered() throws IOException {
@@ -604,6 +616,12 @@ public class MediaWikiLanguageTest extends TestCase {
 		assertTrue(html.contains("<table border=\"1\"><tr style=\"font-style:italic;color:green;\">"));
 		assertTrue(html.contains("<td colspan=\"2\">Orange</td>"));
 		assertTrue(html.contains("<td valign=\"top\">Apple</td>"));
+	}
+
+	public void testTableOptions_CssClass() {
+		String html = parser.parseToHtml("{|class=\"foo\"\n|Some text\n|}");
+		TestUtil.println("HTML: \n" + html);
+		assertTrue(html.contains("<table class=\"foo\"><tr><td>Some text</td></tr></table>"));
 	}
 
 	public void testEntityReference() {
