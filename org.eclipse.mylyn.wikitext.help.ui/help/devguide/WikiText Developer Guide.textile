@@ -70,14 +70,14 @@ To convert Textile wiki markup to HTML:
 
 bc. 
 MarkupParser markupParser = new MarkupParser();
-markupParser.setMarkupLanaguage(new TextileLanguage());
+markupParser.setMarkupLanguage(new TextileLanguage());
 String htmlContent = markupParser.parseToHtml(markupContent);
 
 To convert MediaWiki wiki markup to HTML:
 
 bc. 
 MarkupParser markupParser = new MarkupParser();
-markupParser.setMarkupLanaguage(new MediaWikiLanguage());
+markupParser.setMarkupLanguage(new MediaWikiLanguage());
 String htmlContent = markupParser.parseToHtml(markupContent);
 
 h3. ServiceLocator
@@ -152,7 +152,7 @@ bc..
 Browser browser = new Browser(parent, SWT.NONE);
 
 MarkupParser markupParser = new MarkupParser();
-markupParser.setMarkupLanaguage(new TextileLanguage());
+markupParser.setMarkupLanguage(new TextileLanguage());
 String htmlContent = markupParser.parseToHtml(markupContent);
 		
 browser.setText(htmlContent);
