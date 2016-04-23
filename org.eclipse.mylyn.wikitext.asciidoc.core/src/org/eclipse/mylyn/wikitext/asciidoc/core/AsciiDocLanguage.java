@@ -9,6 +9,7 @@
  *     Stefan Seelmann - initial API and implementation
  *     Max Rydahl Andersen - Bug 474084
  *     Patrik Suzzi <psuzzi@gmail.com> - Bug 481670, 474084
+ *     Jeremie Bresson - Bug 488246
  *******************************************************************************/
 
 package org.eclipse.mylyn.wikitext.asciidoc.core;
@@ -28,6 +29,7 @@ import org.eclipse.mylyn.internal.wikitext.asciidoc.core.block.TitleLineBlock;
 import org.eclipse.mylyn.internal.wikitext.asciidoc.core.block.UnderlinedHeadingBlock;
 import org.eclipse.mylyn.internal.wikitext.asciidoc.core.phrase.BackslashEscapePhraseModifier;
 import org.eclipse.mylyn.internal.wikitext.asciidoc.core.phrase.SimplePhraseModifier;
+import org.eclipse.mylyn.internal.wikitext.asciidoc.core.token.AnchorLinkReplacementToken;
 import org.eclipse.mylyn.internal.wikitext.asciidoc.core.token.EmailLinkReplacementToken;
 import org.eclipse.mylyn.internal.wikitext.asciidoc.core.token.ExplicitLinkReplacementToken;
 import org.eclipse.mylyn.internal.wikitext.asciidoc.core.token.ImplicitFormattedLinkReplacementToken;
@@ -94,6 +96,7 @@ public class AsciiDocLanguage extends AbstractMarkupLanguage {
 		phraseModifierSyntax.add(new ExplicitLinkReplacementToken());
 		phraseModifierSyntax.add(new ImplicitFormattedLinkReplacementToken());
 		phraseModifierSyntax.add(new ImplicitLinkReplacementToken());
+		phraseModifierSyntax.add(new AnchorLinkReplacementToken());
 
 		// backslash escaped span elements
 		phraseModifierSyntax.add(new BackslashEscapePhraseModifier("+")); //$NON-NLS-1$
