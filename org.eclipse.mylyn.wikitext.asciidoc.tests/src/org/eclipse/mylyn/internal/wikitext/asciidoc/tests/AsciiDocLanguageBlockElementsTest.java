@@ -9,6 +9,7 @@
  *     Stefan Seelmann - initial API and implementation
  *     Max Rydahl Andersen - Bug 474084
  *     Patrik Suzzi <psuzzi@gmail.com> - Bug 474084
+ *     Jeremie Bresson - Bug 492301
  *******************************************************************************/
 
 package org.eclipse.mylyn.internal.wikitext.asciidoc.tests;
@@ -129,6 +130,29 @@ public class AsciiDocLanguageBlockElementsTest extends AsciiDocLanguageTestBase 
 		String html = parseToHtml("=========== This is not a title (10)");
 
 		assertEquals(html, "<p>=========== This is not a title (10)</p>");
+	}
+
+	/*
+	 * equals-style headers with phrase modifiers
+	 */
+	@Test
+	public void testEqStyleHeaderLevel2WithItalic() {
+		//Bug 492301
+		String text = "=== This _is_ true!";
+
+		String html = parseToHtml(text.toString());
+
+		assertEquals("<h3>This <em>is</em> true!</h3>", html);
+	}
+
+	@Test
+	public void testEqStyleHeaderLevel3WithCode() {
+		//Bug 492301
+		String text = "==== The `HelloWorld` class";
+
+		String html = parseToHtml(text.toString());
+
+		assertEquals("<h4>The <code>HelloWorld</code> class</h4>", html);
 	}
 
 	/*
