@@ -57,6 +57,24 @@ public class AsciiDocLanguageAnchorTest extends AsciiDocLanguageTestBase {
 	}
 
 	@Test
+	public void testMacro() {
+		String text = "Lorem anchor:xxx[] ipsum";
+
+		String html = parseToHtml(text);
+
+		assertEquals("<p>Lorem <a id=\"xxx\"></a> ipsum</p>\n", html);
+	}
+
+	@Test
+	public void testMacroWithXreflabel() {
+		String text = "Lorem anchor:xxx[yyy] ipsum";
+
+		String html = parseToHtml(text);
+
+		assertEquals("<p>Lorem <a id=\"xxx\"></a> ipsum</p>\n", html);
+	}
+
+	@Test
 	public void testInTitle() {
 		String text = "=== Lorem [[xxx]] ipsum";
 

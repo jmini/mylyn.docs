@@ -29,6 +29,7 @@ import org.eclipse.mylyn.internal.wikitext.asciidoc.core.block.TitleLineBlock;
 import org.eclipse.mylyn.internal.wikitext.asciidoc.core.block.UnderlinedHeadingBlock;
 import org.eclipse.mylyn.internal.wikitext.asciidoc.core.phrase.BackslashEscapePhraseModifier;
 import org.eclipse.mylyn.internal.wikitext.asciidoc.core.phrase.SimplePhraseModifier;
+import org.eclipse.mylyn.internal.wikitext.asciidoc.core.token.AnchorLinkMacroReplacementToken;
 import org.eclipse.mylyn.internal.wikitext.asciidoc.core.token.AnchorLinkReplacementToken;
 import org.eclipse.mylyn.internal.wikitext.asciidoc.core.token.EmailLinkReplacementToken;
 import org.eclipse.mylyn.internal.wikitext.asciidoc.core.token.ExplicitLinkReplacementToken;
@@ -97,6 +98,7 @@ public class AsciiDocLanguage extends AbstractMarkupLanguage {
 		phraseModifierSyntax.add(new ImplicitFormattedLinkReplacementToken());
 		phraseModifierSyntax.add(new ImplicitLinkReplacementToken());
 		phraseModifierSyntax.add(new AnchorLinkReplacementToken());
+		phraseModifierSyntax.add(new AnchorLinkMacroReplacementToken());
 
 		// backslash escaped span elements
 		phraseModifierSyntax.add(new BackslashEscapePhraseModifier("+")); //$NON-NLS-1$
